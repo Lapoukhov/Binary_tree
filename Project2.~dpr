@@ -1,0 +1,131 @@
+program Project2;
+
+{$APPTYPE CONSOLE}
+
+uses
+  SysUtils, Windows;
+
+type
+  Ptree = ^Ttree;
+
+  Ttree = record
+    Key: integer;
+    Left, Right: Ptree;
+    frec : integer;
+    end;
+var
+  tree: Ptree;
+  F: TextFile;
+  x, key, i: integer;
+
+//Добавление элементов в дерево
+Procedure addToTree(var tree : Ptree; x : Integer);
+begin
+  if tree = nil then
+  begin
+    New(tree);
+    tree.Key := x;
+    tree.Left := nil;
+    tree.Right := nil;
+    tree.frec := 0;
+  end
+  else
+  begin
+    if x < tree.Key then
+      addToTree(tree^.Left, x)
+    else
+      addToTree(tree^.Right, x);
+  end;
+end;
+
+//Чтение данных из файла
+Procedure ReadFile;
+begin
+  AssignFile(F, 'TreeFile.txt');
+  reset(f);
+  while not Eof(F) do
+  begin
+    Readln(F, x);
+    addToTree(tree, x);
+  end;
+end;
+
+//Вывод дерева
+Procedure Print(Var Curr : Ptree);
+begin
+  if Curr <> nil then
+  begin
+    write(Curr^.Key : 5);
+    Print(Curr^.Left);
+    Print(Curr^.Right);
+  end;
+end;
+
+//Рекурсивная процедура удаления звена из дерева
+procedure Delete(Var D : PTree; K : integer);
+var
+  Q:PTree;
+procedure Del(Var R : PTree);
+begin
+  if R^.Right = nil then
+  begin
+    Q^.Key := R^.Key;
+    Q^.frec := R^.frec;
+    Q := R;
+    R := Q^.Left;
+  end
+  else
+    Del(R^.Right)
+end;
+
+begin
+  if D = nil then
+    writeln('Звена с заданным ключом в дереве нет')
+  else
+    if Key < D^.Key then
+      Delete(D^.Left, K)
+    else
+      if K > D^.Key then
+        Delete(D^.Right, K)
+      else
+      begin
+        Q := D;
+        if Q^.Right = nil then
+          D := Q^.Left
+        else
+          if Q^.Left = nil then
+            D := Q^.Right
+          else
+            Del(Q^.Left);
+      end;
+end;
+
+
+begin
+SetConsoleCP(1251);
+SetConsoleOutputCP(1251);
+ReadFile;
+repeat
+  writeln;
+  writeln('Для удаления введите 1');
+  writeln('Для выхода введите 0');
+  writeln;
+  readln(i);
+  writeln;
+  if i = 1 then
+  begin
+    Print(tree);
+    writeln;
+    writeln('Введите ключ удаляемого элемента');
+    readln(Key);
+    Delete(tree, Key);
+    writeln;
+    Print(tree);
+  end
+  else
+    begin
+      i := 0;
+    end;
+  until i = 0;
+readln;
+end.
